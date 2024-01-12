@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Square.Api.Data;
-using Square.Api.Entities;
 using Square.Api.Services;
-using Square.Api.Services.Interfaces;
+using Square.Application.Queries.Interfaces;
+using Square.Domain.Entities;
 
 namespace Square.Api.Tests
 {
     public class PointServiceTests
     {
-        private readonly IPointService _pointService;
+        private readonly IPointQueryService _pointService;
 
         public PointServiceTests()
         {
@@ -16,7 +16,7 @@ namespace Square.Api.Tests
                 .UseInMemoryDatabase(Guid.NewGuid().ToString());
             var context = new SquareDbContext(builder.Options);
             var repo = new PointRepository(context);
-            _pointService = new PointService(repo);
+            _pointService = new PointAddCommandHandler(repo);
         }
 
         [Fact]

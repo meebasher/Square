@@ -1,33 +1,30 @@
-﻿using Square.Api.Data.Interfaces;
-using Square.Api.Entities;
-using Square.Api.Services.Contracts;
+﻿using MediatR;
+using Square.Api.Data.Interfaces;
+using Square.Contracts.Point;
+using Square.Contracts.Square;
 
-namespace Square.Api.Services
+namespace Square.Application.Queries.Handlers
 {
     /// <summary>
-    /// Implementaion of <see cref="ISquareService"/>
+    /// Implementaion of <see cref="ISquareQueryService"/>
     /// </summary>
-    public class SquareService : ISquareService
+    public class SquareQueryHandler : IRequestHandler<GetSquareQuery, SquareListResponse>
     {
         private readonly IPointRepository _pointRepository;
 
-        public SquareService(IPointRepository pointRepository)
+        public SquareQueryHandler(IPointRepository pointRepository)
         {
             _pointRepository = pointRepository ??
             throw new ArgumentNullException(nameof(pointRepository));
         }
 
-        /// <summary>
-        /// Determines all squares
-        /// </summary>
-        /// <returns>Returns every unique square</returns>
-        public async Task<List<Models.Square>> GetSquaresAsync()
+        public async Task<SquareListResponse> Handle(GetSquareQuery request, CancellationToken cancellationToken)
         {
             var points = await _pointRepository.GetAllAsync();
             var pointSet = new HashSet<(int, int)>(points.Select(p => (p.X, p.Y)));
             var xToPoints = points.GroupBy(p => p.X).ToDictionary(g => g.Key, g => g.ToList());
 
-            var squares = new List<Models.Square>();
+            var squares = new SquareListResponse();
 
             foreach (var pair in xToPoints)
             {
@@ -40,18 +37,18 @@ namespace Square.Api.Services
                         var dy = Math.Abs(pair.Value[i].Y - pair.Value[j].Y);
                         var x2 = pair.Key + dy;
 
-                        if (xToPoints.ContainsKey(x2) && pointSet.Contains((x2, pair.Value[i].Y)) 
+                        if (xToPoints.ContainsKey(x2) && pointSet.Contains((x2, pair.Value[i].Y))
                             && pointSet.Contains((x2, pair.Value[j].Y)))
                         {
-                            squares.Add(new Models.Square
+                            squares.Squares.Add(new SquareResponse
                             {
-                                Points = new List<Point>
-                            {
-                                new Point(pair.Key, pair.Value[i].Y),
-                                new Point(pair.Key, pair.Value[j].Y),
-                                new Point(x2, pair.Value[i].Y),
-                                new Point(x2, pair.Value[j].Y)
-                            }
+                                Square = new List<PointResponse>
+                                {
+                                    new PointResponse(pair.Key, pair.Value[i].Y),
+                                    new PointResponse(pair.Key, pair.Value[j].Y),
+                                    new PointResponse(x2, pair.Value[i].Y),
+                                    new PointResponse(x2, pair.Value[j].Y)
+                                }
                             });
                         }
                     }
@@ -60,5 +57,6 @@ namespace Square.Api.Services
 
             return squares;
         }
+
     }
 }

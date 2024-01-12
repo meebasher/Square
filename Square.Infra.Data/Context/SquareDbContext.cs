@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Square.Api.Entities;
+using Square.Domain.Entities;
 
-namespace Square.Api.Data
+namespace Square.Infra.Data.Context
 {
     public class SquareDbContext : DbContext
     {

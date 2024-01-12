@@ -1,15 +1,24 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Square.Api.Data.Interfaces;
-using Square.Api.Entities;
+using Square.Domain.Entities;
+using Square.Infra.Data.Context;
 
-namespace Square.Api.Data
+namespace Square.Infra.Data.Repositories
 {
     public class PointRepository : IPointRepository
     {
         private readonly SquareDbContext _context;
 
-        public PointRepository(SquareDbContext context) => _context = context ??
+        public PointRepository(SquareDbContext context) {
+            _context = context ??
             throw new ArgumentNullException(nameof(context));
+            }
+
+        public async Task<bool> PointExistsAsync(Point point)
+        {
+            return await _context.Points.AnyAsync(
+                p => p.X == point.X && p.Y == point.Y) == true ? true : false;
+        }
 
         /// <summary>
         /// Add point to database.
@@ -17,6 +26,7 @@ namespace Square.Api.Data
         /// <param name="point"></param>
         public async Task AddAsync(Point point)
         {
+
             await _context.AddAsync(point);
             await _context.SaveChangesAsync();
         }

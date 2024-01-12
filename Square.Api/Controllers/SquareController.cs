@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Square.Api.Services.Contracts;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Square.Application.Queries;
 
 namespace Square.Api.Controllers
 {
@@ -7,12 +8,11 @@ namespace Square.Api.Controllers
     [ApiController]
     public class SquareController : ControllerBase
     {
-        private readonly ISquareService _service;
+        private IMediator _mediator;
 
-        public SquareController(ISquareService service)
+        public SquareController(IMediator mediator)
         {
-            _service = service ??
-            throw new ArgumentNullException(nameof(service));
+            _mediator = mediator;
         }
 
         /// <summary>
@@ -50,11 +50,11 @@ namespace Square.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<IEnumerable<Models.Square>>> GetSquares()
+        public async Task<ActionResult<SquareListResponse>> GetSquares()
         {
-            var squares = await _service.GetSquaresAsync();
-            if (squares.Any())
-                return Ok(squares);
+            var result = await _mediator.Send(new GetSquareQuery());
+            if (result.Squares.Any())
+                return Ok(result);
 
             return NotFound();
         }

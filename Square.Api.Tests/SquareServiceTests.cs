@@ -1,19 +1,19 @@
 ﻿using Moq;
 using Square.Api.Data.Interfaces;
-using Square.Api.Entities;
-using Square.Api.Services;
+using Square.Application.Queries.Handlers;
+using Square.Domain.Entities;
 
 namespace Square.Api.Tests
 {
     public class SquareServiceTests
     {
         private readonly Mock<IPointRepository> _mockRepo;
-        private readonly SquareService _squareService;
+        private readonly SquareQueryHandler _squareService;
 
         public SquareServiceTests()
         {
             _mockRepo = new Mock<IPointRepository>();
-            _squareService = new SquareService(_mockRepo.Object);
+            _squareService = new SquareQueryHandler(_mockRepo.Object);
         }
 
         [Fact]

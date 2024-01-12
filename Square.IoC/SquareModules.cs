@@ -1,19 +1,18 @@
-﻿using Square.Api.Data;
-using Square.Api.Services.Contracts;
-using Square.Api.Services.Interfaces;
-using Square.Api.Services;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Square.Api.Data.Interfaces;
+using Square.Infra.Data.Repositories;
+using System.Reflection;
 
-namespace Square.Api.IoC
+namespace Square.IoC
 {
     public static class SquareModules
     {
         public static void Register(this IServiceCollection services)
         {
             //services
-            services.AddScoped<ISquareService, SquareService>();
-            services.AddScoped<IPointService, PointService>();
+            services.AddMediatR(c => c.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
             //data
             services.AddScoped<IPointRepository, PointRepository>();
@@ -22,7 +21,7 @@ namespace Square.Api.IoC
         public static void AddDbContextGeneric<T>(this IServiceCollection services, string connectionStringName) where T : DbContext
         {
             var serviceProvider = services.BuildServiceProvider();
-            var configuration = serviceProvider.GetService<IConfiguration>() ?? 
+            var configuration = serviceProvider.GetService<IConfiguration>() ??
                 throw new ArgumentNullException("serviceProvider configuration");
 
             services.AddDbContext<T>(options =>

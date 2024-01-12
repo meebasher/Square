@@ -1,7 +1,7 @@
-using Square.Api.Data;
-using Square.Api.IoC;
 using Square.Api.Middleware;
 using Square.Api.Options;
+using Square.Infra.Data.Context;
+using Square.IoC;
 
 var builder = WebApplication.CreateBuilder(args);
 

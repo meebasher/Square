@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Square.Api.Entities;
-using Square.Api.Services.Interfaces;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Square.Application.Commands;
 
 namespace Square.Api.Controllers
 {
@@ -8,12 +8,11 @@ namespace Square.Api.Controllers
     [ApiController]
     public class PointsController : ControllerBase
     {
-        private readonly IPointService _service;
+        private readonly IMediator _mediator;
 
-        public PointsController(IPointService service)
+        public PointsController(IMediator mediator)
         {
-            _service = service ??
-            throw new ArgumentNullException(nameof(service));
+            _mediator = mediator;
         }
 
         /// <summary>
@@ -40,13 +39,11 @@ namespace Square.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> AddPoints(IEnumerable<Point> points)
+        public async Task<IActionResult> AddPoints(PointListAddCommand command)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            var result = await _mediator.Send(command);
 
-            await _service.AddPointsAsync(points);
-
-            return Ok();
+            return CreatedAtAction(nameof(AddPoints), result);
         }
 
         /// <summary>
@@ -69,13 +66,11 @@ namespace Square.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> AddPoint(Point point)
+        public async Task<IActionResult> AddPoint(PointAddCommand command)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            var result = await _mediator.Send(command);
 
-            await _service.AddPointAsync(point);
-
-            return Created("", point);
+            return CreatedAtAction(nameof(AddPoint), result);
         }
 
         /// <summary>
@@ -95,9 +90,9 @@ namespace Square.Api.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeletePoint(Point point)
+        public async Task<IActionResult> DeletePoint(PointDeleteCommand command)
         {
-            await _service.DeletePointAsync(point);
+            await _mediator.Send(command);
 
             return NoContent();
         }
